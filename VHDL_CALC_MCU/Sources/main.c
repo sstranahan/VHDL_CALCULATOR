@@ -41,11 +41,21 @@ void inputErr(void);
 
 void printErr(void);
 
+void printSuccess(void);
+
 void writeDisplay(void);
 
 void getData(void);
 
 void outputData(void);
+
+void processInput(int numCnt1);
+
+void processInputs(int numCnt1, int numCnt2);
+
+void processOp(unsigned char opIn);
+
+void clearArr(void);
 
 
 ////////////////////////////// UTILS ////////////////////////////////////
@@ -105,12 +115,27 @@ const unsigned char errMsg[64] = {
 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',        // Not displayed
 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',        // Not displayed
 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',        // Not displayed
-'u', 't', '(', 's', ')', ' ', 'T', 'r',
+'u', 't', '(', 's', ')', ' ', 'T', 'r',                                     
 'y', ' ', 'a', 'g', 'a', 'i', 'n', ' ',
 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '         // Not displayed
 };
 
-unsigned char column, row;
+
+const unsigned char successMsg[64] = {
+'I', 'N', 'P', 'U', 'T', ' ', 'R', 'E',
+'C', 'E', 'I', 'V', 'E', 'D', ' ', ' ',
+' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',        // Not displayed
+' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',        // Not displayed
+' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',        // Not displayed
+' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',                                     
+' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '         // Not displayed
+};
+
+
+unsigned char column, row, opType, opSet;
+
+unsigned int operand1, operand2;
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -125,9 +150,16 @@ void main(void){                          //OPEN MAIN
    writeDisplay();   
    
    while(1){
+    
+       // Init globals
+       row = 0;
+       column = 0;
+       opType = 0;
+
+       clearArr();
        
-       
-       
+       writeDisplay();
+
        getData();  
 
    } 
@@ -139,62 +171,255 @@ void main(void){                          //OPEN MAIN
 
 void getData(void){
 
-  int i, numCnt;
+  int i, numCnt1, numCnt2;
   
-  unsigned char keyIn, opIn;
+  unsigned char keyIn, opIn, opSet;
   
   unsigned char secondNum = 0;
   
-  numCnt = 0;
+  numCnt1 = 0;
+  numCnt2 = 0;
+  
+  opIn = 0;
+  opSet = 0;
   
   while(1){
-   
+  
     keyIn = scanKeypad();
-    
-    if (keyIn > '9' && keyIn != ' '){
+ 
+    if (keyIn != 'A' && keyIn > '9' && keyIn != ' '){             // Invalid input error
       inputErr();
       return;   
     }
     
-    if (keyIn < '0' && keyIn != ' '){
+    if (keyIn != 'A' && keyIn < '0' && keyIn != ' '){             // Invalid input error
       inputErr();
       return;   
     }
+    
+    if (numCnt1 >= 4 || numCnt2 >= 4){            // Invalid input error - too many digits  --> Throwing when press 'A' ???
+      inputErr();
+      return;
+    }    
     
     if (keyIn != ' ' && keyIn != 'A'){
       if (!secondNum){
-        dispArr [INPUT_OFFSET + numCnt] = keyIn;
+        dispArr [INPUT_OFFSET + numCnt1] = keyIn;
+        numCnt1++;
       } else{
-        dispArr [INPUT_OFFSET + numCnt + 4] = keyIn;
+        dispArr [INPUT_OFFSET + numCnt1 + 3 + numCnt2] = keyIn;
+        numCnt2++;
       }
       
-      numCnt++;
       writeDisplay();
     }
     
-    if (numCnt >= 4){
-      inputErr();
-      return;
-    }
     
-    if (keyIn == 'A'){
-      return;
-    }
+    if (opSet == 1){
     
-    opIn = scanOpKeypad();
-    
-    if (opIn != ' '){
+      if (opType == 1){
       
-      dispArr[INPUT_OFFSET + 3] = opIn; 
-      numCnt = 0;
-      secondNum = 1;
-      writeDisplay();
+          processOp(opIn);
+          processInput(numCnt1);
+          
+          printSuccess();
+          return;
       
-    } else{
-    
+      } else {
+      
+         if(keyIn == 'A'){
+         
+            if (numCnt2 != 0){
+          
+              processInputs(numCnt1, numCnt2);
+              
+              
+              printSuccess();
+              return;
+          
+            } 
+         }
+      }
     }
+    
+
+    if (numCnt1 != 0 && opSet != 1){                            // Don't scan for operator unless number entered
+      
+      opIn = scanOpKeypad();
+    
+      if (opIn != ' '){
+      
+        opSet = 1;
+        
+        processOp(opIn);
+        
+        dispArr[INPUT_OFFSET + numCnt1 + 1] = opIn;
+         
+        secondNum = 1;
+        
+        writeDisplay();
+        
+      }
+    }
+  }
+}
+
+void processInput(int numCnt1){
+  
+   switch (numCnt1){
+        
+     case 1:
+       
+       operand1 = dispArr[INPUT_OFFSET] - 48;
+       break;
+        
+     case 2:
+     
+       operand1 = ((dispArr[INPUT_OFFSET] - 48) * 10) + (dispArr[INPUT_OFFSET + 1] - 48);
+       break;
+        
+     case 3:
+      
+       operand1 = ((dispArr[INPUT_OFFSET] - 48) * 100) + ((dispArr[INPUT_OFFSET+ 1] - 48) * 10) + (dispArr[INPUT_OFFSET + 2] - 48) ;
+       break;
+      
+   }
+
+   return; 
+
+}
+
+void processInputs(int numCnt1, int numCnt2){
+
+   switch (numCnt1){
+        
+     case 1:
+       
+       operand1 = dispArr[INPUT_OFFSET] - 48;
+       break;
+        
+     case 2:
+     
+       operand1 = ((dispArr[INPUT_OFFSET] - 48) * 10) + (dispArr[INPUT_OFFSET + 1] - 48);
+       break;
+        
+     case 3:
+      
+       operand1 = ((dispArr[INPUT_OFFSET] - 48) * 100) + ((dispArr[INPUT_OFFSET+ 1] - 48) * 10) + (dispArr[INPUT_OFFSET + 2] - 48) ;
+       break;
+      
+   }
+   
+   switch (numCnt1){
+        
+     case 1:
+       
+       operand2 = dispArr[INPUT_OFFSET + numCnt1 + 3] - 48;
+       break;
+        
+     case 2:
+     
+       operand2 = ((dispArr[INPUT_OFFSET + numCnt1 + 3] - 48) * 10) + (dispArr[INPUT_OFFSET + numCnt1 + 3 + 1] - 48);
+       break;
+        
+     case 3:
+      
+       operand2 = ((dispArr[INPUT_OFFSET + numCnt1 + 3] - 48) * 100) + ((dispArr[INPUT_OFFSET + numCnt1 + 3 + 1] - 48) * 10) + (dispArr[INPUT_OFFSET + numCnt1 + 3 + 2] - 48) ;
+       break;
+      
+   }
+
+   return;
+
+}
+
+void clearArr(void){
+
+  int i;
+  
+  for (i = 0; i < 10; i++){
+  
+    dispArr[INPUT_OFFSET + i] = ' ';
   
   }
+
+}
+
+void processOp(unsigned char opIn){
+
+  switch(opIn){
+    
+    case '+' :
+      opType = 2;
+      opSet = '+';
+      break;
+    case '-' :
+      opType = 2;
+      opSet = '-';
+      break;
+    case '*' :
+      opType = 2;
+      opSet = '*';
+      break;
+    case '_' :
+      opType = 1;
+      opSet = '_';
+      break;
+    case 'S' :
+      opType = 1;
+      opSet = 'S';
+      break;
+    case 'D' :
+      opType = 1;
+      opSet = 'D';
+      break;
+    case 'A' :
+      opType = 2;
+      opSet = 'A';
+      break;
+    case 'O' :
+      opType = 2;
+      opSet = 'O';
+      break;
+    case 'N' :
+      opType = 2;
+      opSet = 'N';
+      break;
+    case 'n' :
+      opType = 2;
+      opSet = 'n';
+      break;
+    case 'X' :
+      opType = 2;
+      opSet = 'X';
+      break;
+    case 'I' :
+      opType = 1;
+      opSet = 'I';
+      break;
+    case 'E' :
+      opType = 1;
+      opSet = 'E';
+      break;
+    case 'L' :
+      opType = 1;
+      opSet = 'L';
+      break;
+    case 'R' :
+      opType = 1;
+      opSet = 'R';
+      break;
+    case 'r' :
+      opType = 1;
+      opSet = 'r';
+      break;
+    default  :
+      opType = 0;
+      opSet = ' ';  
+  }
+
+  return;
+  
 }
 
 void initGPIO(void){
@@ -343,8 +568,10 @@ unsigned char scanOpKeypad(void){
    unsigned char rowNum, colNum;
 
    unsigned char keyIn = ' ';
+   
+   OP_KEYS = 0x00;              // All rows low
 
-   OP_KEYS |= 0x80;                       // Set row1 high
+   OP_KEYS |= 0x80;             // Set row1 high
    colNum = OP_KEYS & 0x0F;
    
    if(colNum != 0){             // Key in row1
@@ -366,27 +593,31 @@ unsigned char scanOpKeypad(void){
      }
    }
    
+   OP_KEYS = 0x00;              // All rows low
+   
    OP_KEYS |= 0x40;                       // Set row2 high
    colNum = OP_KEYS & 0x0F;
    
    if(colNum!= 0){             // Key in row2
      switch (colNum){      
      case 0x08 :
-        return keyIn = opKeypad[0][0];
+        return keyIn = opKeypad[1][0];
         break;
      case 0x04 :
-        keyIn = opKeypad[0][1];
+        keyIn = opKeypad[1][1];
         return keyIn;
      case 0x02 :
-        keyIn = opKeypad[0][2];
+        keyIn = opKeypad[1][2];
         return keyIn;
      case 0x01 :
-        keyIn = opKeypad[0][3];
+        keyIn = opKeypad[1][3];
         return keyIn;
      default:
         break;   
      }
    }
+   
+   OP_KEYS = 0x00;              // All rows low
    
    OP_KEYS |= 0x20;                       // Set row3 high
    colNum = OP_KEYS & 0x0F;
@@ -394,21 +625,23 @@ unsigned char scanOpKeypad(void){
    if(colNum != 0){             // Key in row3
      switch (colNum){
      case 0x08 :
-        keyIn = opKeypad[0][0];
+        keyIn = opKeypad[2][0];
         return keyIn;
      case 0x04 :
-        keyIn = opKeypad[0][1];
+        keyIn = opKeypad[2][1];
         return keyIn;
      case 0x02 :
-        keyIn = opKeypad[0][2];
+        keyIn = opKeypad[2][2];
         return keyIn;
      case 0x01 :
-        keyIn = opKeypad[0][3];
+        keyIn = opKeypad[2][3];
         return keyIn;
      default:
         break;   
      }
    }
+   
+   OP_KEYS = 0x00;              // All rows low
    
    OP_KEYS |= 0x10;                       // Set row4 high
    colNum = OP_KEYS & 0x0F;
@@ -416,16 +649,16 @@ unsigned char scanOpKeypad(void){
    if(colNum != 0){             // Key in row5
      switch (colNum){
      case 0x08 :
-        keyIn = opKeypad[0][0];
+        keyIn = opKeypad[3][0];
         return keyIn;
      case 0x04 :
-        keyIn = opKeypad[0][1];
+        keyIn = opKeypad[3][1];
         return keyIn;
      case 0x02 :
-        keyIn = opKeypad[0][2];
+        keyIn = opKeypad[3][2];
         return keyIn;
      case 0x01 :
-        keyIn = opKeypad[0][3];
+        keyIn = opKeypad[3][3];
         return keyIn;
      default:
         break;   
@@ -460,6 +693,26 @@ void printErr(void){
     for (i = 0; i < 64; i++){
       
       DATWRT4(errMsg[i]);
+          
+    }
+     
+    MSDelay(100);
+  }
+  return;
+}
+
+void printSuccess(void){
+
+  int i = 0;
+  int idx = 0;
+   
+  for (idx = 0; idx < 4; idx++){           // Blink msg 4 times
+    
+    clrDisp();
+      
+    for (i = 0; i < 64; i++){
+      
+      DATWRT4(successMsg[i]);
           
     }
      

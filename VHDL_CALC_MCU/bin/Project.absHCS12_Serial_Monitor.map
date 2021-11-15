@@ -24,8 +24,8 @@ Entry point: 0xC000 (_Startup)
 _startupData is allocated at 0xC015 and uses 6 Bytes
 extern struct _tagStartup {
   unsigned nofZeroOut     1
-  _Range   pZeroOut       0x1100     66
-  _Copy    *toCopyDownBeg 0xC084
+  _Range   pZeroOut       0x1100     72
+  _Copy    *toCopyDownBeg 0xC0F2
 } _startupData;
 
 *********************************************************************************************
@@ -34,10 +34,10 @@ Section Name                    Size  Type     From       To       Segment
 ---------------------------------------------------------------------------------------------
 .init                             21     R     0xC000     0xC014   ROM_C000
 .startData                        10     R     0xC015     0xC01E   ROM_C000
-.rodata                           96     R     0xC01F     0xC07E   ROM_C000
-NON_BANKED                         5     R     0xC07F     0xC083   ROM_C000
-.copy                             70     R     0xC084     0xC0C9   ROM_C000
-.text                            949     R   0x308000   0x3083B4   PAGE_30
+.rodata                          160     R     0xC01F     0xC0BE   ROM_C000
+NON_BANKED                        51     R     0xC0BF     0xC0F1   ROM_C000
+.copy                             70     R     0xC0F2     0xC137   ROM_C000
+.text                           1620     R   0x308000   0x308653   PAGE_30
 .stack                           256   R/W     0x1000     0x10FF   RAM
 .data                             64   R/W     0x1100     0x113F   RAM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
@@ -381,12 +381,12 @@ NON_BANKED                         5     R     0xC07F     0xC083   ROM_C000
 .abs_section_17e                   2   N/I      0x17E      0x17F   .absSeg338
 .abs_section_2ae                   2   N/I      0x2AE      0x2AF   .absSeg339
 .abs_section_2be                   2   N/I      0x2BE      0x2BF   .absSeg340
-.common                            2   R/W     0x1140     0x1141   RAM
+.common                            8   R/W     0x1140     0x1147   RAM
 .vectSeg341_vect                   2     R     0xFFFE     0xFFFF   .vectSeg341
 
 Summary of section sizes per section type:
-READ_ONLY (R):         481 (dec:     1153)
-READ_WRITE (R/W):      142 (dec:      322)
+READ_ONLY (R):         78E (dec:     1934)
+READ_WRITE (R/W):      148 (dec:      328)
 NO_INIT (N/I):         190 (dec:      400)
 
 *********************************************************************************************
@@ -611,7 +611,7 @@ MODULE:                 -- mc9s12dg256.c.o --
      _PPSP                                      25D       1       1       0   .abs_section_25d
      _PIEP                                      25E       1       1       0   .abs_section_25e
      _PIFP                                      25F       1       1       0   .abs_section_25f
-     _PTH                                       260       1       1       5   .abs_section_260
+     _PTH                                       260       1       1       9   .abs_section_260
      _PTIH                                      261       1       1       0   .abs_section_261
      _DDRH                                      262       1       1       1   .abs_section_262
      _RDRH                                      263       1       1       0   .abs_section_263
@@ -745,31 +745,41 @@ MODULE:                 -- mc9s12dg256.c.o --
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
 MODULE:                 -- main.c.o --
 - PROCEDURES:
-     main                                    308000      16      22       2   .text       
-     getData                                 308016      6D     109       2   .text       
-     initGPIO                                308083      1C      28       2   .text       
-     initLCD                                 30809F      36      54       2   .text       
-     scanKeypad                              3080D5      CC     204      10   .text       
-     scanOpKeypad                            3081A1      BE     190       4   .text       
-     inputErr                                30825F      11      17       2   .text       
-     printErr                                308270      2D      45       2   .text       
-     writeDisplay                            30829D      1C      28       6   .text       
-     MSDelay                                 3082B9      1F      31      12   .text       
-     COMWRT4                                 3082D8      4B      75       8   .text       
-     DATWRT4                                 308323      4B      75       4   .text       
-     clrDisp                                 30836E       7       7       8   .text       
-     clearInputArray                         308375      10      16       4   .text       
-     cursorReturn                            308385       7       7       2   .text       
+     main                                    308000      27      39       2   .text       
+     getData                                 308027      CA     202       3   .text       
+     processInput                            3080F1      4E      78       2   .text       
+     processInputs                           30813F      A1     161       3   .text       
+     clearArr                                3081E0      10      16       2   .text       
+     processOp                               3081F0      C3     195       4   .text       
+     initGPIO                                3082B3      1C      28       2   .text       
+     initLCD                                 3082CF      36      54       2   .text       
+     scanKeypad                              308305      CC     204      10   .text       
+     scanOpKeypad                            3083D1     100     256       4   .text       
+     inputErr                                3084D1      11      17       2   .text       
+     printErr                                3084E2      2D      45       2   .text       
+     printSuccess                            30850F      2D      45       2   .text       
+     writeDisplay                            30853C      1C      28       8   .text       
+     MSDelay                                 308558      1F      31      14   .text       
+     COMWRT4                                 308577      4B      75       8   .text       
+     DATWRT4                                 3085C2      4B      75       6   .text       
+     clrDisp                                 30860D       7       7      10   .text       
+     clearInputArray                         308614      10      16       4   .text       
+     cursorReturn                            308624       7       7       2   .text       
 - VARIABLES:
      keypad                                    C01F      10      16       4   .rodata     
-     opKeypad                                  C02F      10      16       4   .rodata     
+     opKeypad                                  C02F      10      16      16   .rodata     
      errMsg                                    C03F      40      64       1   .rodata     
-     dispArr                                   1100      40      64       5   .data       
-     column                                    1140       1       1       3   .common     
-     row                                       1141       1       1       3   .common     
+     successMsg                                C07F      40      64       1   .rodata     
+     dispArr                                   1100      40      64      20   .data       
+     column                                    1140       1       1       4   .common     
+     row                                       1141       1       1       4   .common     
+     opType                                    1142       1       1       5   .common     
+     opSet                                     1143       1       1       2   .common     
+     operand1                                  1144       2       2       4   .common     
+     operand2                                  1146       2       2       3   .common     
 MODULE:                 -- Start12.c.o --
 - PROCEDURES:
-     Init                                    30838C      29      41       2   .text       
+     Init                                    30862B      29      41       2   .text       
      _Startup                                  C000      15      21       0   .init       
 - VARIABLES:
      _startupData                              C015       6       6       3   .startData  
@@ -777,7 +787,9 @@ MODULE:                 -- Start12.c.o --
      __SEG_END_SSTACK                          1100       0       0       1               
 MODULE:                 -- rtshc12.c.o (ansibi.lib) --
 - PROCEDURES:
-     _CASE_DIRECT_BYTE                         C07F       5       5       4   NON_BANKED  
+     _CASE_DIRECT_BYTE                         C0BF       5       5       6   NON_BANKED  
+     _CASE_CHECKED_BYTE                        C0C4      14      20       3   NON_BANKED  
+     _CASE_SEARCH_8_BYTE                       C0D8      1A      26       1   NON_BANKED  
 - VARIABLES:
 
 *********************************************************************************************
@@ -785,26 +797,26 @@ MODULE STATISTIC
   Name                                      Data   Code  Const
 ---------------------------------------------------------------------------------------------
   mc9s12dg256.c.o                            400      0      0
-  main.c.o                                    66    908     96
+  main.c.o                                    72   1579    160
   Start12.c.o                                  0     62      0
-  rtshc12.c.o (ansibi.lib)                     0      5      0
+  rtshc12.c.o (ansibi.lib)                     0     51      0
   other                                      256     12     70
 
 *********************************************************************************************
 SECTION USE IN OBJECT-ALLOCATION SECTION
 ---------------------------------------------------------------------------------------------
 SECTION: ".text"
-  main getData initGPIO initLCD scanKeypad scanOpKeypad inputErr printErr 
-  writeDisplay MSDelay COMWRT4 DATWRT4 clrDisp clearInputArray cursorReturn 
-  Init 
+  main getData processInput processInputs clearArr processOp initGPIO initLCD 
+  scanKeypad scanOpKeypad inputErr printErr printSuccess writeDisplay MSDelay 
+  COMWRT4 DATWRT4 clrDisp clearInputArray cursorReturn Init 
 SECTION: ".data"
   dispArr 
 SECTION: ".init"
   _Startup 
 SECTION: ".rodata"
-  keypad opKeypad errMsg 
+  keypad opKeypad errMsg successMsg 
 SECTION: "NON_BANKED"
-  _CASE_DIRECT_BYTE 
+  _CASE_DIRECT_BYTE _CASE_CHECKED_BYTE _CASE_SEARCH_8_BYTE 
 SECTION: ".abs_section_8"
   _PORTE 
 SECTION: ".abs_section_9"
@@ -1488,7 +1500,7 @@ SECTION: ".abs_section_2ae"
 SECTION: ".abs_section_2be"
   _CAN4TXTSR 
 SECTION: ".common"
-  column row 
+  column row opType opSet operand1 operand2 
 
 *********************************************************************************************
 OBJECT LIST SORTED BY ADDRESS
@@ -1760,7 +1772,7 @@ OBJECT LIST SORTED BY ADDRESS
      _PPSP                                      25D       1       1       0   .abs_section_25d
      _PIEP                                      25E       1       1       0   .abs_section_25e
      _PIFP                                      25F       1       1       0   .abs_section_25f
-     _PTH                                       260       1       1       5   .abs_section_260
+     _PTH                                       260       1       1       9   .abs_section_260
      _PTIH                                      261       1       1       0   .abs_section_261
      _DDRH                                      262       1       1       1   .abs_section_262
      _RDRH                                      263       1       1       0   .abs_section_263
@@ -1835,30 +1847,42 @@ OBJECT LIST SORTED BY ADDRESS
      _CAN4TXDLR                                 2BC       1       1       0   .abs_section_2bc
      _CAN4TXTBPR                                2BD       1       1       0   .abs_section_2bd
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
-     dispArr                                   1100      40      64       5   .data       
-     column                                    1140       1       1       3   .common     
-     row                                       1141       1       1       3   .common     
+     dispArr                                   1100      40      64      20   .data       
+     column                                    1140       1       1       4   .common     
+     row                                       1141       1       1       4   .common     
+     opType                                    1142       1       1       5   .common     
+     opSet                                     1143       1       1       2   .common     
+     operand1                                  1144       2       2       4   .common     
+     operand2                                  1146       2       2       3   .common     
      _Startup                                  C000      15      21       0   .init       
      keypad                                    C01F      10      16       4   .rodata     
-     opKeypad                                  C02F      10      16       4   .rodata     
+     opKeypad                                  C02F      10      16      16   .rodata     
      errMsg                                    C03F      40      64       1   .rodata     
-     _CASE_DIRECT_BYTE                         C07F       5       5       4   NON_BANKED  
-     main                                    308000      16      22       2   .text       
-     getData                                 308016      6D     109       2   .text       
-     initGPIO                                308083      1C      28       2   .text       
-     initLCD                                 30809F      36      54       2   .text       
-     scanKeypad                              3080D5      CC     204      10   .text       
-     scanOpKeypad                            3081A1      BE     190       4   .text       
-     inputErr                                30825F      11      17       2   .text       
-     printErr                                308270      2D      45       2   .text       
-     writeDisplay                            30829D      1C      28       6   .text       
-     MSDelay                                 3082B9      1F      31      12   .text       
-     COMWRT4                                 3082D8      4B      75       8   .text       
-     DATWRT4                                 308323      4B      75       4   .text       
-     clrDisp                                 30836E       7       7       8   .text       
-     clearInputArray                         308375      10      16       4   .text       
-     cursorReturn                            308385       7       7       2   .text       
-     Init                                    30838C      29      41       2   .text       
+     successMsg                                C07F      40      64       1   .rodata     
+     _CASE_DIRECT_BYTE                         C0BF       5       5       6   NON_BANKED  
+     _CASE_CHECKED_BYTE                        C0C4      14      20       3   NON_BANKED  
+     _CASE_SEARCH_8_BYTE                       C0D8      1A      26       1   NON_BANKED  
+     main                                    308000      27      39       2   .text       
+     getData                                 308027      CA     202       3   .text       
+     processInput                            3080F1      4E      78       2   .text       
+     processInputs                           30813F      A1     161       3   .text       
+     clearArr                                3081E0      10      16       2   .text       
+     processOp                               3081F0      C3     195       4   .text       
+     initGPIO                                3082B3      1C      28       2   .text       
+     initLCD                                 3082CF      36      54       2   .text       
+     scanKeypad                              308305      CC     204      10   .text       
+     scanOpKeypad                            3083D1     100     256       4   .text       
+     inputErr                                3084D1      11      17       2   .text       
+     printErr                                3084E2      2D      45       2   .text       
+     printSuccess                            30850F      2D      45       2   .text       
+     writeDisplay                            30853C      1C      28       8   .text       
+     MSDelay                                 308558      1F      31      14   .text       
+     COMWRT4                                 308577      4B      75       8   .text       
+     DATWRT4                                 3085C2      4B      75       6   .text       
+     clrDisp                                 30860D       7       7      10   .text       
+     clearInputArray                         308614      10      16       4   .text       
+     cursorReturn                            308624       7       7       2   .text       
+     Init                                    30862B      29      41       2   .text       
 
 *********************************************************************************************
 UNUSED-OBJECTS SECTION
@@ -1870,9 +1894,8 @@ rtshc12.c.o (ansibi.lib):
   _BSHL _BSHRS _BSHRU _BDIVMODU _BDIVMODS _ISHL _ISHRU _ISHRS _LSHL _LSHRU 
   _LSHRS _LADD _LSUB _LAND _LOR _LXOR _LCMP _LCMP_P _LCMP_PP _LNEG _LCOM _LINC 
   _LDEC _LMUL _LMULU16x32 _LMULS16x32 _lDivMod _LDIVU _NEG_P _LDIVS _LMODU 
-  _LMODS _ILSEXT _COPY _CASE_DIRECT _CASE_CHECKED _CASE_CHECKED_BYTE 
-  _CASE_SEARCH _CASE_SEARCH_BYTE _CASE_SEARCH_8 _CASE_SEARCH_8_BYTE _FCALL 
-  _FPCMP 
+  _LMODS _ILSEXT _COPY _CASE_DIRECT _CASE_CHECKED _CASE_SEARCH 
+  _CASE_SEARCH_BYTE _CASE_SEARCH_8 _FCALL _FPCMP 
 NOT USED VARIABLES
 main.c.o:
   STRING..d.1 
@@ -1882,17 +1905,17 @@ rtshc12.c.o (ansibi.lib):
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0xC084 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xC0F2 ---- SIZE       4 ---
 Filling bytes inserted
  00401100
-------- ROM-ADDRESS: 0xC088 ---- RAM-ADDRESS: 0x1100 ---- SIZE      64 ---
+------- ROM-ADDRESS: 0xC0F6 ---- RAM-ADDRESS: 0x1100 ---- SIZE      64 ---
 Name of initialized Object : dispArr
  456E746572 2044617461 3A20202020
  2020202020 2020202020 2020202020
  2020202020 2020202020 2020202020
  2020202020 2020202020 2020202020
  20202020
-------- ROM-ADDRESS: 0xC0C8 ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xC136 ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -1901,15 +1924,23 @@ OBJECT-DEPENDENCIES SECTION
 ---------------------------------------------------------------------------------------------
 _Startup                  USES __SEG_END_SSTACK Init main 
 main                      USES initGPIO initLCD clearInputArray writeDisplay 
-                                getData 
-getData                   USES scanKeypad dispArr writeDisplay inputErr 
-                                scanOpKeypad 
+                                row column opType clearArr getData 
+getData                   USES scanKeypad inputErr dispArr writeDisplay opType 
+                                processOp processInput processInputs printSuccess 
+                                scanOpKeypad getData 
+processInput              USES _CASE_CHECKED_BYTE operand1 dispArr 
+processInputs             USES _CASE_CHECKED_BYTE dispArr processInputs 
+                                operand1 operand2 
+clearArr                  USES dispArr 
+processOp                 USES _CASE_DIRECT_BYTE _CASE_SEARCH_8_BYTE opSet 
+                                opType 
 initGPIO                  USES _DDRAB _DDRJ _DDRH _PTJ _DDRP _PTP _DDRK 
 initLCD                   USES _DDRK COMWRT4 MSDelay 
 scanKeypad                USES _PORTAB scanKeypad column row keypad MSDelay 
 scanOpKeypad              USES _PTH scanOpKeypad _CASE_DIRECT_BYTE opKeypad 
 inputErr                  USES clrDisp printErr clearInputArray 
 printErr                  USES clrDisp errMsg DATWRT4 MSDelay 
+printSuccess              USES clrDisp successMsg DATWRT4 MSDelay 
 writeDisplay              USES clrDisp dispArr DATWRT4 cursorReturn 
 COMWRT4                   USES _PORTK MSDelay 
 DATWRT4                   USES _PORTK MSDelay 
@@ -1951,14 +1982,14 @@ DEPENDENCY TREE
  |  |     | 
  |  |     +- COMWRT4              (see above)
  |  |        
+ |  +- clearArr            
+ |  |    
  |  +- getData             
  |     | 
  |     +- scanKeypad          
  |     |  | 
  |     |  +- MSDelay              (see above)
  |     |     
- |     +- writeDisplay         (see above)
- |     |  
  |     +- inputErr            
  |     |  | 
  |     |  +- clrDisp              (see above)
@@ -1973,10 +2004,34 @@ DEPENDENCY TREE
  |     |  |     
  |     |  +- clearInputArray      (see above)
  |     |     
+ |     +- writeDisplay         (see above)
+ |     |  
+ |     +- processOp           
+ |     |  | 
+ |     |  +- _CASE_DIRECT_BYTE   
+ |     |  |    
+ |     |  +- _CASE_SEARCH_8_BYTE 
+ |     |       
+ |     +- processInput        
+ |     |  | 
+ |     |  +- _CASE_CHECKED_BYTE  
+ |     |       
+ |     +- processInputs       
+ |     |  | 
+ |     |  +- _CASE_CHECKED_BYTE   (see above)
+ |     |     
+ |     +- printSuccess        
+ |     |  | 
+ |     |  +- clrDisp              (see above)
+ |     |  |  
+ |     |  +- DATWRT4              (see above)
+ |     |  |  
+ |     |  +- MSDelay              (see above)
+ |     |     
  |     +- scanOpKeypad        
  |        | 
- |        +- _CASE_DIRECT_BYTE   
- |             
+ |        +- _CASE_DIRECT_BYTE    (see above)
+ |           
  +- _Startup            
     | 
     +- Init                
@@ -1990,5 +2045,5 @@ STATISTIC SECTION
 ExeFile:
 --------
 Number of blocks to be downloaded: 6
-Total size of all blocks to be downloaded: 1153
+Total size of all blocks to be downloaded: 1934
 
