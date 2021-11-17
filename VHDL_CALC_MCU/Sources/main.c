@@ -1,3 +1,9 @@
+// TODO: Check that operands are in range -128 <-> 127 -- error
+//       Use timer interrupt to transmit clock signal
+//       Output data on busses
+
+
+
 /////////////////////////////////////////////////////////////////////////
 ///////////////////////       DEFINES       /////////////////////////////
 /////////////////////////////////////////////////////////////////////////
@@ -18,9 +24,13 @@
 #define RS 0x01
 #define EN 0x02
 
-#define INPUT_OFFSET 40
+#define INPUT_OFFSET 40                                                                          
 
 #define OP_KEYS PTH
+
+#define A_BUS  PORTB
+#define B_BUS  PTP
+#define OPCODE PORTE    // High 4-bits only
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -57,6 +67,8 @@ void processOp(unsigned char opIn);
 
 void clearArr(void);
 
+void writeIo(void);
+
 
 ////////////////////////////// UTILS ////////////////////////////////////
 
@@ -71,8 +83,6 @@ void clrDisp(void);
 void clearInputArray(void);
 
 void cursorReturn(void);
-
-char* int2char3dig (unsigned int num);
 
 void incCursor(void);
 
@@ -133,9 +143,9 @@ const unsigned char successMsg[64] = {
 };
 
 
-unsigned char column, row, opType, opSet;
+unsigned char column, row, opType, opSet, op;
 
-unsigned int operand1, operand2;
+int operand1, operand2;
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -150,17 +160,37 @@ void main(void){                          //OPEN MAIN
    writeDisplay();   
    
    while(1){
-    
+      
        // Init globals
        row = 0;
        column = 0;
        opType = 0;
+       
+       PORTB = 0x00;                       // CLEAR OPERAND1
+       
+       PTP = 0x00;                         // CLEAR OPERAND2
+       
+       OPCODE = OPCODE & 0x0F;             // CLEAR OPCODE
+       
+       PTM = PTM & 0xDF;                   // ENABLE LOW
+       
+       PTT = PTT & 0xFB;                   // CLOCK LOW
 
        clearArr();
        
        writeDisplay();
 
-       getData();  
+       getData();
+       
+       writeIo();
+       
+       MSDelay(10);                        // Hold enable line high
+       
+       PTT = PTT | 0x04;                   // CLOCK HI
+       
+       MSDelay(10);                        // Hold enable line high
+       
+       PTT = PTT & 0xFB;                   // CLOCK LOW  
 
    } 
 }
@@ -168,6 +198,75 @@ void main(void){                          //OPEN MAIN
 /////////////////////////////////////////////////////////////////////////
 ////////////////////////  LOCAL FUNCTIONS  //////////////////////////////
 /////////////////////////////////////////////////////////////////////////
+
+void writeIo(void){
+  
+  A_BUS = operand1;
+  
+  B_BUS = operand2;
+  
+  switch(op){
+  
+    case '+' :
+       OPCODE = OPCODE | 0x00;
+       break;
+    case '-' :
+       OPCODE = OPCODE | 0x10;
+       break;
+    case '*' :
+       OPCODE = OPCODE | 0x20;
+       break;
+    case '_' :
+       OPCODE = OPCODE | 0x30;
+       break;
+    case 'S' :
+       OPCODE = OPCODE | 0x40;
+       break;
+    case 'D' :
+       OPCODE = OPCODE | 0x50;
+       break;
+    case 'A' :
+       OPCODE = OPCODE | 0x60;
+       break;
+    case 'O' :
+       OPCODE = OPCODE | 0x70;
+       break;
+    case 'N' :
+       OPCODE = OPCODE | 0x80;
+       break;
+    case 'n' :
+       OPCODE = OPCODE | 0x90;
+       break;
+    case 'X' :
+       OPCODE = OPCODE | 0xA0;
+       break;
+    case 'I' :
+       OPCODE = OPCODE | 0xB0;
+       break;
+    case 'E' :
+       OPCODE = OPCODE | 0xC0;
+       break;
+    case 'L' :
+       OPCODE = OPCODE | 0xD0;
+       break;
+    case 'R' :
+       OPCODE = OPCODE | 0xE0;
+       break;
+    case 'r' : 
+       OPCODE = OPCODE | 0x0F;
+       break;
+    default :
+       break;
+    
+  }
+  
+  PTM = PTM | 0x20;    // Enable HI
+  
+  return; 
+
+}
+
+
 
 void getData(void){
 
@@ -284,6 +383,11 @@ void processInput(int numCnt1){
        break;
       
    }
+   
+   if (operand1 < -128 || operand1 > 127){
+      operand1 = 0;
+      inputErr();
+   }
 
    return; 
 
@@ -328,6 +432,16 @@ void processInputs(int numCnt1, int numCnt2){
        break;
       
    }
+   
+   if (operand1 < -128 || operand1 > 127){
+      operand1 = 0;
+      inputErr();
+   }
+   
+   if (operand2 < -128 || operand2 > 127){
+      operand2 = 0;
+      inputErr();
+   }
 
    return;
 
@@ -351,71 +465,71 @@ void processOp(unsigned char opIn){
     
     case '+' :
       opType = 2;
-      opSet = '+';
+      op = '+';
       break;
     case '-' :
       opType = 2;
-      opSet = '-';
+      op = '-';
       break;
     case '*' :
       opType = 2;
-      opSet = '*';
+      op = '*';
       break;
     case '_' :
       opType = 1;
-      opSet = '_';
+      op = '_';
       break;
     case 'S' :
       opType = 1;
-      opSet = 'S';
+      op = 'S';
       break;
     case 'D' :
       opType = 1;
-      opSet = 'D';
+      op = 'D';
       break;
     case 'A' :
       opType = 2;
-      opSet = 'A';
+      op = 'A';
       break;
     case 'O' :
       opType = 2;
-      opSet = 'O';
+      op = 'O';
       break;
     case 'N' :
       opType = 2;
-      opSet = 'N';
+      op = 'N';
       break;
     case 'n' :
       opType = 2;
-      opSet = 'n';
+      op = 'n';
       break;
     case 'X' :
       opType = 2;
-      opSet = 'X';
+      op = 'X';
       break;
     case 'I' :
       opType = 1;
-      opSet = 'I';
+      op = 'I';
       break;
     case 'E' :
       opType = 1;
-      opSet = 'E';
+      op = 'E';
       break;
     case 'L' :
       opType = 1;
-      opSet = 'L';
+      op = 'L';
       break;
     case 'R' :
       opType = 1;
-      opSet = 'R';
+      op = 'R';
       break;
     case 'r' :
       opType = 1;
-      opSet = 'r';
+      op = 'r';
       break;
     default  :
       opType = 0;
-      opSet = ' ';  
+      op = ' ';  
   }
 
   return;
@@ -427,10 +541,14 @@ void initGPIO(void){
   DDRJ = 0xFF;                           // PTJ as output for Dragon12+ LEDs
   DDRA = 0x0F;                           // MAKE ROWS INPUT AND COLUMNS OUTPUT
   DDRH = 0xF0;                           // MAKE ROWS OUTPUT AND COLUMNS INPUT
-  PTJ=0x0;                               //Allow the LEDs to dsiplay data on PORTB pins
+  DDRP = 0xFF;                           // PORTP Output
+  DDRE |= 0xF0;                          // Top half output - Operand
+  PTJ=0x0;                               // Allow the LEDs to dsiplay data on PORTB pins
   DDRP |=0x0F;                           // RGB LED OUTPUTS
   PTP |=0x0F;                            // TURN OFF 7SEG LED
   DDRK = 0xFF;                           // PORTK IS LCD MODULE
+  DDRT |= 0x04;                          // PT2 - clock - output
+  DDRM |= 0x20;                          // PM5 - enable - output
   
   return;
 }
