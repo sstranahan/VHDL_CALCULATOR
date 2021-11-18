@@ -111,9 +111,30 @@ BEGIN
 		OP_SEL <= "0000";
 		A <= "00001111";
 		B<= "00001111"; -- 15 + 15 = 30 = 0001 1110
-		wait for CLK_period*5;
-		ENABLE <= '0';
 		wait for CLK_period;
+		ENABLE <= '0';
+		wait for 225 ns;
+		
+		
+		ENABLE <= '1';
+		OP_SEL <= "0011";
+		A <= "10000000";
+		B<= "01111111"; -- -128 * -1 = 128
+		wait for CLK_period;
+		ENABLE <= '0';
+		wait for 225 ns;
+		
+		
+		ENABLE <= '1';
+		OP_SEL <= "0010";
+		A <= "10000000";
+		B<= "01111111"; -- -128 * 127 = -16256 = 1100000010000000
+		wait for CLK_period;
+		ENABLE <= '0';
+		wait for 225 ns;
+		
+		
+		
 
       wait for CLK_period*10;
 

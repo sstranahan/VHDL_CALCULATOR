@@ -247,6 +247,24 @@ BEGIN
 		
 		enable <= '0';
 		wait for CLK_period;
+		
+		enable <= '1';
+		OP_SEL <= "0000";
+		A <= "11111010";
+		B <= "11111010"; 
+		wait for CLK_period; -- Result should be -6 + -6 = -12 = 1111 1111 1111 0100
+		
+		enable <= '0';
+		wait for CLK_period;
+		
+		enable <= '1';
+		OP_SEL <= "0010";
+		A <= "10000000";
+		B <= "01111111"; 
+		wait for CLK_period; -- Result should be 1100000010000000
+		
+		enable <= '0';
+		wait for CLK_period;
 
       wait for CLK_period*10;
 

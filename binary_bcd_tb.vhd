@@ -106,36 +106,31 @@ BEGIN
 		
 		reset <= '1';
 		binary_in <= "1110111100011111"; -- -4321
-		wait for 20 ns;
-		
-		reset <= '0';
+		wait for clk_period;
+		reset <= '0';		
 		wait for 200 ns;
-		
+
 		reset <= '1';
 		binary_in <= "0000010011010010"; -- 1234
-		wait for 20 ns;
-		
+		wait for clk_period;
 		reset <= '0';
 		wait for 200 ns;
 		
 		reset <= '1';
 		binary_in <= "0111101101000010"; -- 31554
-		wait for 20 ns;
-		
+		wait for clk_period;
 		reset <= '0';
 		wait for 200 ns;
 		
 		reset <= '1';
 		binary_in <= "1000010010111110"; -- -31554
-		wait for 20 ns;
-		
+		wait for clk_period;
 		reset <= '0';
 		wait for 200 ns;
 		
 		reset <= '1';
 		binary_in <= "0000000101000000"; -- 320
-		wait for 20 ns;
-		
+		wait for clk_period;
 		reset <= '0';
 		wait for 200 ns;
 		

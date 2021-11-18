@@ -1,3 +1,7 @@
+
+-- NOTES:
+-- 250 ns required between new inputs
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
@@ -17,12 +21,14 @@ entity alu is
 end alu;
 
 architecture Behavioral of alu is
+signal ones : std_logic_vector(7 downto 0) := "11111111";
 begin
 	process(CLK, A, B, enable)
 	begin
-		ready <= '1';   -- Seems to be an issue with this signal
-		if (rising_edge(CLK) AND enable <= '1') then
-			
+		ready <= '0';
+		if (rising_edge(CLK)) then
+			if (enable = '1') then
+
 			case OP_SEL is
 				when "0000" =>
 					O <= std_logic_vector(resize((signed(A) + signed(B)), 16));
@@ -31,8 +37,7 @@ begin
 				when "0010" =>
 					O <= std_logic_vector(resize(signed(A) * signed(B), 16));
 				when "0011" =>
-					O <= std_logic_vector(resize((NOT signed(A)) + "00000001", 16));
-					
+					O <= std_logic_vector(resize(signed(A) * signed(ones), 16));
 				when "0100" =>
 					O <= std_logic_vector(resize(signed(A) * signed(A), 16));
 				when "0101" =>
@@ -61,9 +66,11 @@ begin
 					O <= std_logic_vector(resize(shift_right(signed(A),1), 16));
 				when others => O <= "1111111111111111"; -- Error state	
 			end case;
-			ready <= '1';
+				ready <= '1';
+			else
+				ready <= '0';
+			end if;
 		end if;
-	
 	end process;
 end Behavioral;
 
@@ -126,7 +133,7 @@ begin
 	 
         state_next <= state;
 		  
-		  if state_next = start	  then
+		  if state_next = start then
 			  ready <= '1';
 		  else
 			  ready <= '0';
@@ -367,5 +374,7 @@ seg7_i4 : bcd_seg7
 		IS_NEG_OUT	=>	IS_NEG_FIN4,
 		SEG7_OUT		=>	SEG7_4
 	);	
+	
+
 	
 end Structural;
